@@ -1,8 +1,8 @@
 $ontext
 PHOTOAUTOTROPHIC CELL MODEL
 version: 1.0
-subversion: 'glucose addition scenario'
-date: 07-08-2017
+subversion: 'light and CO2 limitation'
+date: 25-02-2018
 author: Michael Jahn
 affiliation: Science for Life Laboratory (KTH), Stockholm, Sweden
 based on: R. Burnap, 2015, Molenaar et al., 2009
@@ -13,7 +13,7 @@ changelog:
    +removed STA, substrate transport and assimilation and merged it with
     CBM, carbon metabolism. CBM includes CO2 fixation and other pathways
     that generate precursors 'pre'.
-   +implemented light inhibition term for PSET rate v('PSET'). 
+   +implemented optional light inhibition term for PSET rate v('PSET'). 
     The term includes a substrate inhibition constant Ki similar to Km.
     v=c_enz*kcat*[S]/(Km+[S]*(1+[S]/Ki))
 --- 07-08-2017 ---
@@ -113,27 +113,27 @@ cmp "all cell components" / LHC    "light harvesting complex, photosystems"
 PARAMETERS
 
 kcat(enz)  "kcat of enzymes = turnover number; PSET=55"
-          /LHC     336
-           PSET     55
+          /LHC     160
+           PSET     31
            CBM       5
-           LPB       5
-           RIB       7
+           LPB       7
+           RIB      10
            GLM       5/
 
 Km(enz)    "Km of enzymes = substrate affinity constant"
-          /LHC      59
-           PSET    130
-           CBM     162
-           LPB       8
-           RIB     131
+          /LHC      58
+           PSET    108
+           CBM     229
+           LPB      13
+           RIB     128
            GLM      50/
 
 hc(enz)    "Hc of enzymes = Hill coefficient for cooperativity"
-          /LHC     2.0682
-           PSET    1.2970
-           CBM     2.3868
-           LPB     1.0951
-           RIB     0.8875
+          /LHC     2.0043
+           PSET    1.3989
+           CBM     2.2477
+           LPB     0.6744
+           RIB     0.8659
            GLM     2.0000/
 
 
@@ -155,15 +155,15 @@ glc     "extracellular glucose concentration"
 Ki      "light inhibition constant for photosystems"
 
 
-table linregTable(pro, linreg)  "constraints of linear regression for mu vs alpha"
+table linregTable(pro, linreg)  "constraints of linear regression for mu vs alpha under light limitation"
         interceptConst     slopeConst
-LHC     0.2919311          -2.3654433
-PSET    0.1281630          -0.2659562
-CBM     0.1104245          0.8761943
-LPB     0.01534113         0.04810899
-RIB     0.1304704          0.9944643
-MAI     0.2890993          0.6816366
-GLM     0.03457060         0.03099523
+LHC     0.3155446          -1.7828190
+PSET    0.1488815          -0.2966529
+CBM     0.0928786           0.7384860
+LPB     0.01785177          0.01575331
+RIB     0.1002482           0.9634276
+MAI     0.2875577           0.3078048
+GLM     0.02396478          0.01308973
 
 
 table stoich(met, enz)  "reaction stoichiometry matrix"
@@ -242,7 +242,7 @@ MODEL CELL "the autotrophic cell model" /ALL/;
 *
 hv  = 100;
 sub = 100;
-glc =  40;
+glc =   0;
 *Ki  = 20;
 
 
@@ -264,14 +264,8 @@ slope.up(pro)$conP(pro) = linregTable(pro, 'slopeConst')$conP(pro);
 
 * ------------ ITERATIVE SOLVING OF MODEL ------------------------------
 *
-* Iterate over a FOR loop that tests different light conditions
+* Iterate over a FOR loop that tests different light or CO2 conditions
 SET i                   "iteration driver" / 1*15 /;
-
-* optional calculation of slopes for linear equation from one high light solve
-* of mu versus alpha.
-*SOLVE CELL USING NLP MAXIMIZING logmu;
-*slope.lo(pro) = (a.l(pro)-intercept.l(pro))/ exp(logmu.l);
-*slope.up(pro) = (a.l(pro)-intercept.l(pro))/ exp(logmu.l);
 
 * avoid zero values, that are not exported by gams
 a.lo(pro) = 0.0001;
@@ -301,3 +295,36 @@ LOOP (i,
 );
 
 DISPLAY report;
+
+
+* ------- OPTIONAL SOLVING OF ALL COMBINATIONS OF TWO VARIABLES --------
+*
+* Iterate over two FOR loop that test different light and CO2 conditions
+* For plotting 3D it's easier to have a linear instead of log distribution
+SET j                   "iteration driver" / 1*20 /;
+SET k                   "iteration driver" / 1*20 /;
+hv  = 99;
+sub = 99;
+
+
+* this report needs to have 4 slots
+PARAMETER report2(*,*,*,*) "process level report" ;
+
+
+LOOP (j,
+    LOOP (k,
+        SOLVE CELL USING NLP MAXIMIZING logmu;
+        report2('model','sub',j,k) = sub;
+        report2('model','hv',j,k) = hv;
+        report2('model','mu',j,k) = exp(logmu.l);
+        report2('model','beta',j,k) = beta.l;
+        report2('alpha',pro,j,k) = a.l(pro);
+        report2(' conc',cmp,j,k) = c.l(cmp);
+        report2(' rate',enz,j,k) = v.l(enz);
+        hv = hv-5;
+    );
+    sub = sub-5;
+    hv  = 99;
+);
+
+DISPLAY report2;
