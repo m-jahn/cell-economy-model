@@ -301,30 +301,30 @@ DISPLAY report;
 *
 * Iterate over two FOR loop that test different light and CO2 conditions
 * For plotting 3D it's easier to have a linear instead of log distribution
-SET j                   "iteration driver" / 1*20 /;
-SET k                   "iteration driver" / 1*20 /;
-hv  = 99;
-sub = 99;
-
-
+*SET j                   "iteration driver" / 1*20 /;
+*SET k                   "iteration driver" / 1*20 /;
+*hv  = 99;
+*sub = 99;
+*
+*
 * this report needs to have 4 slots
-PARAMETER report2(*,*,*,*) "process level report" ;
-
-
-LOOP (j,
-    LOOP (k,
-        SOLVE CELL USING NLP MAXIMIZING logmu;
-        report2('model','sub',j,k) = sub;
-        report2('model','hv',j,k) = hv;
-        report2('model','mu',j,k) = exp(logmu.l);
-        report2('model','beta',j,k) = beta.l;
-        report2('alpha',pro,j,k) = a.l(pro);
-        report2(' conc',cmp,j,k) = c.l(cmp);
-        report2(' rate',enz,j,k) = v.l(enz);
-        hv = hv-5;
-    );
-    sub = sub-5;
-    hv  = 99;
-);
-
-DISPLAY report2;
+*PARAMETER report2(*,*,*,*) "process level report" ;
+*
+*
+*LOOP (j,
+*    LOOP (k,
+*        SOLVE CELL USING NLP MAXIMIZING logmu;
+*        report2('model','sub',j,k) = sub;
+*        report2('model','hv',j,k) = hv;
+*        report2('model','mu',j,k) = exp(logmu.l);
+*        report2('model','beta',j,k) = beta.l;
+*        report2('alpha',pro,j,k) = a.l(pro);
+*        report2(' conc',cmp,j,k) = c.l(cmp);
+*        report2(' rate',enz,j,k) = v.l(enz);
+*        hv = hv-5;
+*    );
+*    sub = sub-5;
+*    hv  = 99;
+*);
+*
+*DISPLAY report2;
