@@ -50,11 +50,11 @@ cmp "all cell components" / LHC    "light harvesting complex, photosystems"
 PARAMETERS
 
 kcat(enz)  "kcat of enzymes = turnover number; PSET=55"
-          /LHC     160
-           PSET     31
-           CBM       5
-           LPB       7
-           RIB      10
+          /LHC     172
+           PSET     35
+           CBM       6
+           LPB       6
+           RIB      11
            GLM       5/
 
 Km(enz)    "Km of enzymes = substrate affinity constant"
@@ -157,8 +157,7 @@ volume..     beta*(sA('cpm')*c('cpm')+Sum(cpmP, sA(cpmP)*c(cpmP))) =E= 1;
 alphaSum..   Sum(pro, a(pro)) =E= 1;
 Pbal(pro)..  a(pro)*v('RIB') - exp(logmu)*c(pro) =E= 0;
 Mbal(met)..  Sum(enz, stoich(met, enz)*v(enz)) - exp(logmu)*c(met) =E= 0;
-*cat_PSET..   v('PSET') =E= kcat('PSET')*c('PSET')*c('hvi')/(c('hvi')*(1+c('hvi')/Ki) + Km('PSET'));
-cat_LHC..    v('LHC') =E= kcat('LHC')*c('LHC')*rPower(hv, hc('LHC'))/(rPower(Km('LHC'), hc('LHC')) + rPower(hv, hc('LHC')));
+cat_LHC..    v('LHC') =E= kcat('LHC')*c('LHC')*rPower(hv, hc('LHC'))/(rPower(Km('LHC'), hc('LHC')) + rPower(hv, hc('LHC')) + rPower(hv, 2*hc('LHC'))/Ki);
 cat_PSET..   v('PSET') =E= kcat('PSET')*c('PSET')*rPower(c('hvi'), hc('PSET')) /(rPower(c('hvi'), hc('PSET')) + rPower(Km('PSET'), hc('PSET')));
 cat_CBM..    v('CBM') =E= kcat('CBM')*c('CBM')*c('nadph')*rPower(sub, hc('CBM'))*c('atp')/(c('nadph')*rPower(sub, hc('CBM'))*c('atp') + KmNADPH('CBM')*c('atp') + KmATP('CBM')*c('nadph') + KmATP('CBM')*rPower(sub, hc('CBM')) + rPower(Km('CBM'), hc('CBM'))*c('nadph'));
 cat_LPB..    v('LPB') =E= kcat('LPB')*c('LPB')*rPower(c('pre'), hc('LPB'))/(rPower(Km('LPB'), hc('LPB')) + rPower(c('pre'), hc('LPB')));
@@ -177,10 +176,10 @@ MODEL CELL "the autotrophic cell model" /ALL/;
 
 * ------------ STARTING CONCENTRATIONS ---------------------------------
 *
-hv  = 100;
-sub = 100;
-glc =   0;
-*Ki  = 20;
+hv  =  100;
+sub =  100;
+glc =    0;
+Ki  = 4351;
 
 
 * Initial values for cofactors (prevent division by zero, do not affect result)

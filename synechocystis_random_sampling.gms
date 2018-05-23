@@ -69,7 +69,7 @@ sA(mem) "specific surface area of membrane located components"
 hv      "extracellular light irradiation"
 sub     "extracellular substrate concentration (CO2/HCO3-)"
 glc     "extracellular glucose concentration"
-Ki      "light inhibition constant for photosystems"
+Ki      "light inhibition constant for photosynthesis"
 
 
 table linregTable(pro, linreg)  "constraints of linear regression for mu vs alpha under light limitation"
@@ -137,7 +137,7 @@ volume..     beta*(sA('cpm')*c('cpm')+Sum(cpmP, sA(cpmP)*c(cpmP))) =E= 1;
 alphaSum..   Sum(pro, a(pro)) =E= 1;
 Pbal(pro)..  a(pro)*v('RIB') - exp(logmu)*c(pro) =E= 0;
 Mbal(met)..  Sum(enz, stoich(met, enz)*v(enz)) - exp(logmu)*c(met) =E= 0;
-cat_LHC..    v('LHC') =E= kcat('LHC')*c('LHC')*rPower(hv, hc('LHC'))/(rPower(Km('LHC'), hc('LHC')) + rPower(hv, hc('LHC')));
+cat_LHC..    v('LHC') =E= kcat('LHC')*c('LHC')*rPower(hv, hc('LHC'))/(rPower(Km('LHC'), hc('LHC')) + rPower(hv, hc('LHC')) + rPower(hv, 2*hc('LHC'))/Ki);
 cat_PSET..   v('PSET') =E= kcat('PSET')*c('PSET')*rPower(c('hvi'), hc('PSET')) /(rPower(c('hvi'), hc('PSET')) + rPower(Km('PSET'), hc('PSET')));
 cat_CBM..    v('CBM') =E= kcat('CBM')*c('CBM')*c('nadph')*rPower(sub, hc('CBM'))*c('atp')/(c('nadph')*rPower(sub, hc('CBM'))*c('atp') + KmNADPH('CBM')*c('atp') + KmATP('CBM')*c('nadph') + KmATP('CBM')*rPower(sub, hc('CBM')) + rPower(Km('CBM'), hc('CBM'))*c('nadph'));
 cat_LPB..    v('LPB') =E= kcat('LPB')*c('LPB')*rPower(c('pre'), hc('LPB'))/(rPower(Km('LPB'), hc('LPB')) + rPower(c('pre'), hc('LPB')));
@@ -166,11 +166,11 @@ c.l('nadph') = 0.1;
 
 PARAMETERS    
 kcat_init(enz)    "Initial values for kcat"
-          /LHC     160
-           PSET     31
-           CBM       5
-           LPB       7
-           RIB      10
+          /LHC     172
+           PSET     35
+           CBM       6
+           LPB       6
+           RIB      11
            GLM       5/
 
 Km_init(enz)      "Initial values for Km"
@@ -204,11 +204,11 @@ slope.up(pro)$conP(pro) = linregTable(pro, 'slopeConst')$conP(pro);
 * Iterate over a FOR loop that sets random values for kcat and Km
 * Iterate over a FOR loop that tests different conditions
 SET j                   "iteration driver" / 1*1000 /;
-SET i                   "iteration driver" / 1*10 /;
+SET i                   "iteration driver" / 1*11 /;
 PARAMETER Res_mu        "Sum of Residuals between model-optimized and experimental growth rate";
 PARAMETER Res_al        "Sum of Residuals between model-optimized and experimental protein fractions";
-PARAMETER Res_mu_optim  "current optimal Sum of Residuals"; Res_mu_optim = 0.0209;
-PARAMETER Res_al_optim  "current optimal Sum of Residuals"; Res_al_optim = 0.7081;
+PARAMETER Res_mu_optim  "current optimal Sum of Residuals"; Res_mu_optim = 0.036;
+PARAMETER Res_al_optim  "current optimal Sum of Residuals"; Res_al_optim = 0.5381;
 
 
 * report parameters of the model. '.l' is the current level, '.M' for 
@@ -219,13 +219,14 @@ PARAMETER report(*,*,*) "process level report";
 * ------------ ITERATE OVER KINETIC PARAMETERS -------------------------
 *
 LOOP (j,
-    hv = 50;
+    hv = 100;
     Res_mu = 0;
     Res_al = 0;
     execseed = 1e8*(frac(jnow));
-    LOOP(enz, kcat(enz) = uniformint(round(kcat_init(enz)*0.8), round(kcat_init(enz)*1.2)););
-    LOOP(enz, Km(enz) = uniformint(round(Km_init(enz)*0.8), round(Km_init(enz)*1.2)););
-    LOOP(enz, hc(enz) = uniform(hc_init(enz)*0.8, hc_init(enz)*1.2););
+    Ki = uniformint(4000, 5000);
+    LOOP(enz, kcat(enz) = uniformint(round(kcat_init(enz)*0.9), round(kcat_init(enz)*1.1)););
+    LOOP(enz, Km(enz) = uniformint(round(Km_init(enz)*0.9), round(Km_init(enz)*1.1)););
+    LOOP(enz, hc(enz) = uniform(hc_init(enz)*0.9, hc_init(enz)*1.1););
     
 * ------------ ITERATE OVER CONDITION ----------------------------------
     
@@ -249,6 +250,7 @@ LOOP (j,
         report(' kcat',enz,i) = kcat(enz);
         report('   Km',enz,i) = Km(enz);
         report('   hc',enz,i) = hc(enz);
+        report('   Ki','LHC',i) = Ki;
         report('  Res','mu',i) = Res_mu;
         report('  Res','alpha',i) = Res_al;
         hv = hv/1.5;
