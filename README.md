@@ -1,16 +1,26 @@
 # cell-economy-model
 Cellular economy models based on global optimization using GAMS
 
+This cellular economy model is a 'coarse-grain' model originally conceived by Molenaar et al., 2009, and R. Burnap, 2015. The purpose of the model is not to reflect cellular behavior in its entire complexity, but rather to reduce complexity to an amount that still allows drawing significant conclusions while keeping the number of components and reactions as small as possible. Following this assumption, a cellular economy model may not contain all known metabolic pathways, enzymes or known kinetic parameters thereof. It rather bundles fundamental cellular processes in 'super-enzymes' (sectors). These are single catalytic units that serve as proxies for several similar or related pathways. However, the output from a coarse-grain model is very useful as it illustrates metabolic tradeoffs under different conditions, without getting lost in details. The model is a non-linear mixed-integer optimization problem formulated in GAMS, a programming language for optimization problems. Although different aspects of cellular behaviour can be probed using this model, it is focused on growth as the objective function.
+
 ## overview
 
+- type: cellular economy model of a photoautotrophic cell
 - version: 1.0
 - date: 2018-04-06
 - author: Michael Jahn
 - affiliation: Science for Life Laboratory (KTH), Stockholm, Sweden
-- based on: R. Burnap, 2015, Molenaar et al., 2009
-- characteristics: protein economy model of a photoautotrophic cell
+- original concept and models by:
+-- Burnap, R.L. (2015). Systems and Photosystems: Cellular Limits of Autotrophic Productivity in Cyanobacteria. Front. Bioeng. Biotechnol. 3, 1.
+-- Molenaar, D., Van Berlo, R., De Ridder, D., and Teusink, B. (2009). Shifts in growth strategies reflect tradeoffs in cellular economics. Mol. Syst. Biol. 5, 323.
+
 
 ## changelog
+
+### 2018-05-20
+- simulation of photoinhibition by including the according term in the rate equation for the light harvesting sector LHC.
+- new branch of the model including the possibility to fix dynamic fractions of each protein as un-utilized, that can be seen as a protein 'reserve'. Thsi behavior is known for ribosomes, whose mass expands with growth rate but is not directly proportional to it. Even at µ=0, cells keep a large fraction of the proteome as inactive/un-utilized ribosomes.
+
 ### 2017-08-28
 - removed STA, substrate transport and assimilation and merged it with CBM, carbon metabolism. CBM includes CO2 fixation and other pathways that generate precursors 'pre'. 
 - implemented light inhibition term for PSET rate v('PSET'). The term includes a substrate inhibition constant Ki similar to Km. v=c_enz*kcat*[S]/(Km+[S]*(1+[S]/Ki))
