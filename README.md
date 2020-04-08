@@ -1,6 +1,12 @@
 # cell-economy-model
 Cellular economy models based on global optimization using GAMS
 
+-----
+
+**Note: This version is deprecated. please check out the [new implementation based on python](https://github.com/m-jahn/cell-economy-models)**
+
+-----
+
 This cellular economy model is a 'coarse-grain' model originally conceived by Molenaar et al., 2009, and R. Burnap, 2015. The purpose of the model is not to reflect cellular behavior in its entire complexity, but rather to reduce complexity to an amount that still allows drawing significant conclusions while keeping the number of components and reactions as small as possible. Following this assumption, a cellular economy model may not contain all known metabolic pathways, enzymes or known kinetic parameters thereof. It rather bundles fundamental cellular processes in 'super-enzymes' (sectors). These are single catalytic units that serve as proxies for several similar or related pathways. However, the output from a coarse-grain model is very useful as it illustrates metabolic tradeoffs under different conditions, without getting lost in details. The model is a non-linear mixed-integer optimization problem formulated in GAMS, a programming language for optimization problems. Although different aspects of cellular behaviour can be probed using this model, it is focused on growth as the objective function.
 
 ## overview
